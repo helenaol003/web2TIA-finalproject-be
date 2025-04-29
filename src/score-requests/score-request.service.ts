@@ -17,7 +17,7 @@ export class ScoreRequestService {
     return this.repo.save(request);
   }
 
-  findAll() {
+  findAll(status: string | undefined) {
     return this.repo.find({ order: { createdAt: 'DESC' } });
   }
 

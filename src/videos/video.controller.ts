@@ -6,13 +6,17 @@ import {
   Body,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { CreateVideoDto } from './create-video.dto';
 import { VideoService } from './video.service';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
+@ApiTags('Videos')
+@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('videos')
 export class VideoController {
@@ -20,20 +24,22 @@ export class VideoController {
 
   @Post()
   @Roles('admin')
-  async create(@Body() dto: CreateVideoDto) {
+  @ApiOperation({ summary: 'Upload video (admin only)' })
+  @ApiResponse({ status: 201, description: 'Video uploaded successfully' })
+  create(@Body() dto: CreateVideoDto) {
     return this.videoService.create(dto);
   }
 
-  // 🟡 b. Get videos sesuai grade user
   @Get()
-@Roles('Beginner', 'Intermediate', 'Advanced', 'admin')
-async findByUserGrade(@Req() req) {
-  const user = req.user;
-
-  if (user.role === 'admin') {
-    return this.videoService.findAll(); // admin bisa lihat semua
+  @Roles('Beginner', 'Intermediate', 'Advanced', 'admin')
+  @ApiOperation({ summary: 'Get videos based on user grade or all for admin' })
+  @ApiResponse({ status: 200, description: 'List of videos returned' })
+  @ApiQuery({ name: 'grade', required: false, description: 'Filter videos by grade' })
+  findByUserGrade(@Req() req, @Query('grade') grade?: string) {
+    const user = req.user;
+    if (user.role === 'admin') {
+      return this.videoService.findAll();
+    }
+    return this.videoService.findByGrade(grade || user.grade);
   }
-
-  return this.videoService.findByGrade(user.grade); // user biasa lihat sesuai grade
-}
 }

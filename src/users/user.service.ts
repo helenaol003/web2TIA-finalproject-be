@@ -12,7 +12,7 @@ export class UserService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  findAll() {
+  findAll(status: string | undefined) {
     return this.userRepo.find();
   }
 

@@ -29,5 +29,5 @@ export class SheetMusicService {
     return this.sheetRepo.find({
       where: { grade },
     });
-  }  
+  }
 }
